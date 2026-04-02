@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react';
-import { Search, ExternalLink, Briefcase, Building2, Sparkles, Cpu, Code, Wallet } from 'lucide-react';
+import { useState, useMemo, MouseEvent } from 'react';
+import { Search, ExternalLink, Briefcase, Building2, Sparkles, Cpu, Code, Wallet, Copy, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { COMPANIES, Company } from './constants';
 
@@ -134,7 +134,21 @@ interface CompanyCardProps {
   key?: string | number;
 }
 
-const CompanyCard = ({ company }: CompanyCardProps) => {
+function CompanyCard({ company }: CompanyCardProps) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async (e: MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      await navigator.clipboard.writeText(company.careersUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
+    }
+  };
+
   return (
     <motion.div
       layout
@@ -166,15 +180,28 @@ const CompanyCard = ({ company }: CompanyCardProps) => {
         {company.description}
       </p>
 
-      <a
-        href={company.careersUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-flex items-center justify-center gap-2 w-full py-3 px-4 bg-slate-900 text-white rounded-xl font-semibold text-sm hover:bg-blue-600 transition-all active:scale-[0.98]"
-      >
-        View Careers
-        <ExternalLink className="w-4 h-4" />
-      </a>
+      <div className="flex gap-2">
+        <a
+          href={company.careersUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center justify-center gap-2 flex-1 py-3 px-4 bg-slate-900 text-white rounded-xl font-semibold text-sm hover:bg-blue-600 transition-all active:scale-[0.98]"
+        >
+          View Careers
+          <ExternalLink className="w-4 h-4" />
+        </a>
+        <button
+          onClick={handleCopy}
+          title="Copy career link"
+          className={`inline-flex items-center justify-center w-12 h-12 rounded-xl border transition-all active:scale-[0.95] ${
+            copied 
+              ? 'bg-green-50 border-green-200 text-green-600' 
+              : 'bg-white border-slate-200 text-slate-400 hover:text-slate-600 hover:border-slate-300'
+          }`}
+        >
+          {copied ? <Check className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
+        </button>
+      </div>
     </motion.div>
   );
-};
+}
